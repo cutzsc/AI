@@ -1,12 +1,20 @@
 ﻿using System;
+using MathNet.Numerics.Random;
 
 namespace KernelDeeps.AI
 {
 	public static class Mathf
 	{
+		public static Random random;
+
+		static Mathf()
+		{
+			random = new Random();
+		}
+
 		public static float NextSingle(float min, float max)
 		{
-			return (float)Mathd.NextDouble(min, max);
+			return (float)random.NextDouble() * (max - min) + min;
 		}
 
 		public static float Sigmoid(float x)

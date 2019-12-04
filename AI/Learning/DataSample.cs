@@ -2,20 +2,19 @@
 
 namespace KernelDeeps.AI.Learning
 {
-	public class LearningSet<T>
-		where T : struct, IEquatable<T>, IFormattable
+	public class DataSample : IDisposable
 	{
-		public readonly T[] inputs;
-		public readonly T[] outputs;
+		public readonly float[] inputs;
+		public readonly float[] outputs;
 
-		public LearningSet(T[] inputs, T[] outputs)
+		public DataSample(float[] inputs, float[] outputs)
 			: this(inputs, 0, inputs.Length, outputs, 0, outputs.Length) { }
 
-		public LearningSet(T[] inputs, int insputs_start, int inputs_length,
-			T[] outputs, int outputs_start, int outputs_length)
+		public DataSample(float[] inputs, int insputs_start, int inputs_length,
+			float[] outputs, int outputs_start, int outputs_length)
 		{
-			this.inputs = new T[inputs_length];
-			this.outputs = new T[outputs_length];
+			this.inputs = new float[inputs_length];
+			this.outputs = new float[outputs_length];
 
 			int i = 0;
 			if (inputs_length > outputs_length)
@@ -42,6 +41,11 @@ namespace KernelDeeps.AI.Learning
 					this.outputs[i] = outputs[i + outputs_start];
 				}
 			}
+		}
+
+		public void Dispose()
+		{
+
 		}
 	}
 }

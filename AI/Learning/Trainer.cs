@@ -1,4 +1,5 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.LinearAlgebra.Single;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,55 +8,89 @@ using System.Threading.Tasks;
 
 namespace KernelDeeps.AI.Learning
 {
-	public class Trainer<T>
-		where T : struct, IEquatable<T>, IFormattable
+	public class Trainer
 	{
-		public delegate void TrainHandler(TrainContext<T> ctx);
+		public delegate void TrainHandler(TrainEventArgs ctx);
 		public event TrainHandler TrainBegan;
 		public event TrainHandler TrainEnded;
 		public event TrainHandler TrainPerform;
 
-		INeuralNetwork<T> obj;
-		LearningData<T> data;
+		INeuralNetwork network;
+		DataBatch dataBatch;
 
-		public Trainer(INeuralNetwork<T> obj)
+		public double MSE { get; private set; }
+
+		public Trainer(INeuralNetwork network)
 		{
-			this.obj = obj;
+			this.network = network;
 		}
 
-		public void SetLearningData(LearningData<T> data)
+		public void SetLearningData(DataBatch dataBatch)
 		{
-			this.data = data;
+			this.dataBatch = dataBatch;
 		}
 
-		public void Train(int iterations, T eta, T alpha, TrainHandlerOptions options = default, bool allowRandom = false)
+		public void Train(int iterations, float eta, float alpha, TrainHandlerOptions options = default, bool allowRandom = false)
 		{
-			TrainBegan?.Invoke(new TrainContext<T>());
+			TrainBegan?.Invoke(new TrainEventArgs());
 
-			LearningSet<T> set = null;
+			DataSample set = null;
 			int time = iterations / (options.calls <= 0 ? options.call == CallTime.EveryFewTimes ? 1 : iterations + 1 : options.calls);
 
 			for (int i = 0, dist = iterations - options.calls; i < iterations; i++)
 			{
-				set = data.Next(allowRandom);
+				set = dataBatch.Next(allowRandom);
 
-				obj.ProcessInputs(set.inputs);
-				obj.Learn(set.outputs, eta, alpha);
+				network.ProcessInputs(set.inputs);
+				network.Learn(set.outputs, eta, alpha);
 
 				switch (options.call)
 				{
 					case CallTime.AtTheEnd:
 						if (i >= dist)
-							TrainPerform?.Invoke(new TrainContext<T>(set.inputs, obj.Prediction, set.outputs));
+							TrainPerform?.Invoke(new TrainEventArgs(set.inputs, network.Prediction, set.outputs));
 						break;
 					case CallTime.EveryFewTimes:
 						if (i % time == 0)
-							TrainPerform?.Invoke(new TrainContext<T>(set.inputs, obj.Prediction, set.outputs));
+							TrainPerform?.Invoke(new TrainEventArgs(set.inputs, network.Prediction, set.outputs));
 						break;
 				}
 			}
 
-			TrainEnded?.Invoke(new TrainContext<T>(set.inputs, obj.Prediction, set.outputs));
+			TrainEnded?.Invoke(new TrainEventArgs(set.inputs, network.Prediction, set.outputs));
+		}
+
+		public void Train(int epochs, int samples, int batchSize)
+		{
+			// pseudo
+			int iterations = samples / batchSize;
+
+			for (int epoch = 0; epoch < epochs; epoch++)
+			{
+
+				for (int i = 0; i < iterations; i++)
+				{
+					//dataBatch.Begin(batchSize);
+					//foreach (Sample sample in dataBatch)
+					//{
+
+					//}
+					//dataBatch.End();
+				}
+
+			}
+		}
+
+		private void Cost(float[] targets)
+		{
+			float sum = 0;
+			float[] outputs = network.Prediction;
+			for (int i = 0; i < dataBatch.outputSize; i++)
+			{
+				float sub = targets[i] - outputs[i];
+				sum += sub * sub;
+			}
+			MSE = sum / dataBatch.outputSize;
 		}
 	}
 }
