@@ -29,25 +29,36 @@ namespace KernelDeeps.AI.Learning
 		public virtual void Train(int epochs, int numSamples, int batchSize,
 			float learningRate, float momentumRate)
 		{
+			LearningBegan?.Invoke(this, new LearningEventArgs());
+
 			for (int epoch = 0; epoch < epochs; epoch++)
 			{
-				Sample[] samples;
-
 				for (int i = 0; i < (numSamples / batchSize); i++)
 				{
-					samples = reader.ReadNext(batchSize);
-					foreach (Sample sample in samples)
-					{
-						net.ProcessInputs(sample.inputs);
-						net.Learn(sample.outputs, 0.15f, 0.75f);
-					}
+					ProcessBatch(reader.ReadNext(batchSize), learningRate, momentumRate);
 				}
 
-				samples = reader.ReadNext(numSamples % batchSize);
-				foreach (Sample sample in samples)
+				if (numSamples % batchSize > 0)
 				{
-					net.ProcessInputs(sample.inputs);
-					net.Learn(sample.outputs, 0.15f, 0.75f);
+					ProcessBatch(reader.ReadNext(numSamples % batchSize), learningRate, momentumRate);
+				}
+			}
+
+			LearningEnded?.Invoke(this, new LearningEventArgs());
+		}
+
+		private void ProcessBatch(Sample[] samples, float eta, float alpha)
+		{
+			int i = 0;
+			foreach (Sample sample in samples)
+			{
+				net.ProcessInputs(sample.inputs);
+				net.Learn(sample.outputs, eta, alpha);
+
+				if (++i % samples.Length == 0)
+				{
+					Cost(sample.outputs);
+					LearningPerformed?.Invoke(this, new LearningEventArgs(sample.inputs, net.Prediction, sample.outputs, MSE));
 				}
 			}
 		}
