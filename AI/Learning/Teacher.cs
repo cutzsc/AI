@@ -13,6 +13,11 @@ namespace KernelDeeps.AI.Learning
 		NeuralNetwork net;
 		BDReader reader;
 
+		public delegate void LearningHandler(object sender, LearningEventArgs e);
+		public event LearningHandler LearningBegan;
+		public event LearningHandler LearningEnded;
+		public event LearningHandler LearningPerformed;
+
 		public double MSE { get; protected set; }
 
 		public Teacher(NeuralNetwork net, BDReader reader)
@@ -21,7 +26,8 @@ namespace KernelDeeps.AI.Learning
 			this.reader = reader;
 		}
 
-		public virtual void Train(int epochs, int numSamples, int batchSize)
+		public virtual void Train(int epochs, int numSamples, int batchSize,
+			float learningRate, float momentumRate)
 		{
 			for (int epoch = 0; epoch < epochs; epoch++)
 			{

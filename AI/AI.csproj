@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="IO">
+      <HintPath>..\..\IO\IO\bin\Debug\IO.dll</HintPath>
+    </Reference>
     <Reference Include="MathNet.Numerics, Version=4.9.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MathNet.Numerics.4.9.0\lib\net461\MathNet.Numerics.dll</HintPath>
     </Reference>
@@ -46,13 +49,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FeedForwardNetwork.cs" />
-    <Compile Include="INeuralNetwork.cs" />
-    <Compile Include="Learning\DataBatch.cs" />
-    <Compile Include="Learning\Sample.cs" />
-    <Compile Include="Learning\TrainHandlerOptions.cs" />
-    <Compile Include="Learning\Trainer.cs" />
-    <Compile Include="Learning\TrainEventArgs.cs" />
+    <Compile Include="ConvNet.cs" />
+    <Compile Include="FFNet.cs" />
+    <Compile Include="Learning\LearningEventArgs.cs" />
+    <Compile Include="Learning\Teacher.cs" />
     <Compile Include="Mathf.cs" />
     <Compile Include="NeuralNetwork.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
