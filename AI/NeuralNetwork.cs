@@ -75,7 +75,7 @@ namespace KernelDeeps.AI
 		/// </summary>
 		public virtual void Learn(float[] targets, float eta, float alpha)
 		{
-			if (targets.Length != outputs.Last().ColumnCount)
+			if (targets.Length != outputs[outputs.Length - 1].ColumnCount)
 				throw new ArgumentException();
 
 			// calculate output layer

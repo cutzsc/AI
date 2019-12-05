@@ -51,13 +51,15 @@
   <ItemGroup>
     <Compile Include="ConvNet.cs" />
     <Compile Include="FFNet.cs" />
+    <Compile Include="Learning\CallBackOptions.cs" />
+    <Compile Include="Learning\CallTime.cs" />
     <Compile Include="Learning\LearningEventArgs.cs" />
+    <Compile Include="Learning\LearningOptions.cs" />
     <Compile Include="Learning\Teacher.cs" />
     <Compile Include="Mathf.cs" />
     <Compile Include="NeuralNetwork.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
