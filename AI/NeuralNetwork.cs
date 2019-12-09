@@ -22,6 +22,8 @@ namespace KernelDeeps.AI
 		public Func<float, float> Transfer { get; set; }
 		public Func<float, float> TransferDerivative { get; set; }
 		public float[] Prediction => outputs[outputs.Length - 1].ToRowMajorArray();
+		public int NumberOfInputs => dimension[0];
+		public int NumberOfOutputs => dimension[dimension.Length - 1];
 
 		public NeuralNetwork(params int[] dimension)
 		{

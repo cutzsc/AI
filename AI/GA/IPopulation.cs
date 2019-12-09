@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace KernelDeeps.AI.GA
 {
-	public interface IPopulation
+	public interface IPopulation<T, V>
+		where T : IOrganism<V>
+		where V : IGenotype
 	{
-		void EvaluateFitness();
-		IIndividual SelectIndividual();
-		void Diversificate();
+		List<T> Creatures { get; }
+		void CalculateFitness();
+		T ChooseOrganism();
 		void GeneratePopulation();
 	}
 }
