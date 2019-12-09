@@ -12,5 +12,10 @@ namespace KernelDeeps.AI
 		{
 
 		}
+
+		public override object Clone()
+		{
+			return base.Clone();
+		}
 	}
 }

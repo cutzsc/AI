@@ -12,5 +12,21 @@ namespace KernelDeeps.AI
 	{
 		public FFNet(params int[] dimension)
 			: base(dimension) { }
+
+		public override object Clone()
+		{
+			FFNet copy = new FFNet(dimension);
+			copy.Initialize();
+			copy.Transfer = Transfer;
+			copy.TransferDerivative = TransferDerivative;
+
+			for (int i = 0; i < weights.Length; i++)
+			{
+				copy.weights[i].SetSubMatrix(0, 0, weights[i]);
+				copy.b_weights[i].SetSubMatrix(0, 0, b_weights[i]);
+			}
+
+			return copy;
+		}
 	}
 }

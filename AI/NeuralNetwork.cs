@@ -7,14 +7,16 @@ using System.Threading.Tasks;
 
 namespace KernelDeeps.AI
 {
-	public abstract class NeuralNetwork
+	public abstract class NeuralNetwork : ICloneable
 	{
 		protected int[] dimension;
 
 		protected Matrix<float>[] outputs;
+
 		protected Matrix<float>[] weights;
-		protected Matrix<float>[] deltaWeights;
 		protected Matrix<float>[] b_weights;
+
+		protected Matrix<float>[] deltaWeights;
 		protected Matrix<float>[] b_deltaWeights;
 
 		public Func<float, float> Transfer { get; set; }
@@ -33,9 +35,9 @@ namespace KernelDeeps.AI
 		}
 
 		/// <summary>
-		/// Fully connected initialization
+		/// Fully connected initialization.
 		/// </summary>
-		public virtual void Init(float minWeight, float maxWeight, Func<float, float, float> f)
+		public virtual void Initialize()
 		{
 			for (int i = 0; i < dimension.Length; i++)
 			{
@@ -46,14 +48,24 @@ namespace KernelDeeps.AI
 					deltaWeights[i] = Matrix<float>.Build.Dense(dimension[i], dimension[i + 1]);
 					b_weights[i] = Matrix<float>.Build.Dense(1, dimension[i + 1]);
 					b_deltaWeights[i] = Matrix<float>.Build.Dense(1, dimension[i + 1]);
-					weights[i].MapInplace(e => e = f(minWeight, maxWeight));
-					b_weights[i].MapInplace(e => e = f(minWeight, maxWeight));
 				}
 			}
 		}
 
 		/// <summary>
-		/// Feed forward
+		/// Initialize weights with some values.
+		/// </summary>
+		public virtual void ConnectLayers(float minWeight, float maxWeight, Func<float, float, float> f)
+		{
+			for (int i = 0; i < dimension.Length - 1; i++)
+			{
+				weights[i].MapInplace(e => e = f(minWeight, maxWeight));
+				b_weights[i].MapInplace(e => e = f(minWeight, maxWeight));
+			}
+		}
+
+		/// <summary>
+		/// Feed forward.
 		/// </summary>
 		public virtual void ProcessInputs(float[] inputs)
 		{
@@ -71,7 +83,7 @@ namespace KernelDeeps.AI
 		}
 
 		/// <summary>
-		/// Backpropagation
+		/// Backpropagation.
 		/// </summary>
 		public virtual void Learn(float[] targets, float eta, float alpha)
 		{
@@ -114,6 +126,11 @@ namespace KernelDeeps.AI
 					.Add(b_momentum);
 				b_weights[weights_index] += b_deltaWeights[weights_index];
 			}
+		}
+
+		public virtual object Clone()
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

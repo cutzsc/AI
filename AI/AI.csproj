@@ -50,7 +50,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConvNet.cs" />
+    <Compile Include="EvoNet.cs" />
     <Compile Include="FFNet.cs" />
+    <Compile Include="GA\IGenotype.cs" />
+    <Compile Include="GA\IIndividual.cs" />
+    <Compile Include="GA\IPopulation.cs" />
     <Compile Include="Learning\CallBackOptions.cs" />
     <Compile Include="Learning\CallTime.cs" />
     <Compile Include="Learning\LearningEventArgs.cs" />
@@ -63,5 +67,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
