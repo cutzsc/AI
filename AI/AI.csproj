@@ -72,9 +72,12 @@
     <Compile Include="ConvNet.cs" />
     <Compile Include="GA\Brain.cs" />
     <Compile Include="FFNet.cs" />
+    <Compile Include="GA\MutationType.cs" />
     <Compile Include="GA\IGenotype.cs" />
     <Compile Include="GA\IOrganism.cs" />
     <Compile Include="GA\IPopulation.cs" />
+    <Compile Include="GA\Reproduction.cs" />
+    <Compile Include="GA\Selection.cs" />
     <Compile Include="Learning\CallBackOptions.cs" />
     <Compile Include="Learning\CallTime.cs" />
     <Compile Include="Learning\LearningEventArgs.cs" />
@@ -82,7 +85,12 @@
     <Compile Include="Learning\Teacher.cs" />
     <Compile Include="Mathf.cs" />
     <Compile Include="NeuralNetwork.cs" />
+    <Compile Include="LayerOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Statistics.cs" />
+    <Compile Include="Test\Ant.cs" />
+    <Compile Include="Test\Swarm.cs" />
+    <Compile Include="Test\Test.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

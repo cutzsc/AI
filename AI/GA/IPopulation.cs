@@ -6,7 +6,10 @@ namespace KernelDeeps.AI.GA
 		where T : IOrganism<V>
 		where V : IGenotype
 	{
-		List<T> Creatures { get; }
+		float BestScore { get; }
+		float BestFitness { get; }
+
+		IEnumerable<T> Creatures { get; }
 		void CalculateFitness();
 		T ChooseOrganism();
 		void GeneratePopulation();

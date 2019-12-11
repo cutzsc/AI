@@ -10,22 +10,21 @@ namespace KernelDeeps.AI
 {
 	public class FFNet : NeuralNetwork
 	{
-		public FFNet(params int[] dimension)
-			: base(dimension) { }
+		public FFNet(params LayerOptions[] layers)
+			: base(layers) { }
+
+		public FFNet(IEnumerable<LayerOptions> layers)
+			: base(layers) { }
 
 		public override object Clone()
 		{
-			FFNet copy = new FFNet(dimension);
-			copy.Initialize();
-			copy.Transfer = Transfer;
-			copy.TransferDerivative = TransferDerivative;
-
+			FFNet copy = new FFNet(layers);
+			copy.Build();
 			for (int i = 0; i < weights.Length; i++)
 			{
 				copy.weights[i].SetSubMatrix(0, 0, weights[i]);
 				copy.b_weights[i].SetSubMatrix(0, 0, b_weights[i]);
 			}
-
 			return copy;
 		}
 	}

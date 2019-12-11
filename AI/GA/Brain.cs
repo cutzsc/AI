@@ -4,48 +4,104 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using KernelDeeps.AI;
+using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.Statistics;
+using MathNet.Numerics.Distributions;
 
 namespace KernelDeeps.AI.GA
 {
 	public class Brain : NeuralNetwork, IGenotype
 	{
-		public Brain(params int[] dimension)
-			: base(dimension) { }
+		public Brain(params LayerOptions[] layers)
+			: base(layers) { }
 
-		public IGenotype Crossover(IGenotype parent1, IGenotype parent2)
+		public Brain(IEnumerable<LayerOptions> layers)
+			: base(layers) { }
+
+		public (IGenotype, IGenotype) Crossover(IGenotype partner)
 		{
-			Brain p1 = parent1 as Brain;
-			Brain p2 = parent2 as Brain;
-			Brain child = new Brain(dimension);
+			Brain child = new Brain(layers);
 
 			// TODO
+
 			// crossover
 
-			return child;
+			return (child, child);
 		}
 
-		public void Mutate(float mutationRate)
+		public void Mutate(MutationType type, float chance)
 		{
+			List<Matrix<float>> data = new List<Matrix<float>>();
 			for (int i = 0; i < weights.Length; i++)
 			{
-				weights[i].MapInplace(e =>
-				{
-					return Mathf.random.NextDouble() < mutationRate ? Mathf.NextSingle(-1, 1) : e;
-				});
+				data.Add(weights[i]);
+				data.Add(b_weights[i]);
+			}
+			float mean = Statistics.Mean(data);
+			float stddev = Statistics.Stddev(data, mean);
 
-				b_weights[i].MapInplace(e =>
+			switch (type)
+			{
+				case MutationType.PDF:
+					PDF(data, chance, mean, stddev);
+					break;
+				case MutationType.BoxMuller:
+					BoxMuller(data, chance, mean, stddev);
+					break;
+				default:
+					throw new ArgumentException();
+			}
+		}
+
+		private void BoxMuller(List<Matrix<float>> data, float chance, float mean, float stddev)
+		{
+			var boxMuller = Statistics.BoxMuller(mean, stddev);
+			int toggle = 0;
+
+			foreach (Matrix<float> matrix in data)
+			{
+				for (int y = 0; y < matrix.RowCount; y++)
 				{
-					return Mathf.random.NextDouble() < mutationRate ? Mathf.NextSingle(-1, 1) : e;
-				});
+					for (int x = 0; x < matrix.ColumnCount; x++)
+					{
+						if (Mathf.random.NextDouble() < chance)
+						{
+							toggle++;
+							if (toggle % 2 == 0)
+							{
+								matrix[y, x] += boxMuller.Item1;
+								toggle = 0;
+								boxMuller = Statistics.BoxMuller(mean, stddev);
+							}
+							else
+								matrix[y, x] += boxMuller.Item2;
+						}
+					}
+				}
+			}
+		}
+
+		private void PDF(List<Matrix<float>> data, float chance, float mean, float stddev)
+		{
+			foreach (Matrix<float> matrix in data)
+			{
+				for (int y = 0; y < matrix.RowCount; y++)
+				{
+					for (int x = 0; x < matrix.ColumnCount; x++)
+					{
+						if (Mathf.random.NextDouble() < chance)
+						{
+							matrix[y, x] += Statistics.PDF(mean, stddev, Mathf.NextSingle(-1f, 1f));
+						}
+					}
+				}
 			}
 		}
 
 		public override object Clone()
 		{
-			Brain copy = new Brain(dimension);
-			copy.Initialize();
-			copy.Transfer = Transfer;
-			copy.TransferDerivative = TransferDerivative;
+			Brain copy = new Brain(layers);
+			copy.Build();
 			for (int i = 0; i < weights.Length; i++)
 			{
 				copy.weights[i].SetSubMatrix(0, 0, weights[i]);
@@ -56,16 +112,7 @@ namespace KernelDeeps.AI.GA
 
 		IGenotype IGenotype.Clone()
 		{
-			Brain copy = new Brain(dimension);
-			copy.Initialize();
-			copy.Transfer = Transfer;
-			copy.TransferDerivative = TransferDerivative;
-			for (int i = 0; i < weights.Length; i++)
-			{
-				copy.weights[i].SetSubMatrix(0, 0, weights[i]);
-				copy.b_weights[i].SetSubMatrix(0, 0, b_weights[i]);
-			}
-			return copy;
+			return Clone() as Brain;
 		}
 	}
 }

@@ -2,8 +2,8 @@
 {
 	public interface IGenotype
 	{
-		IGenotype Crossover(IGenotype parent1, IGenotype parent2);
-		void Mutate(float mutationRate);
+		(IGenotype, IGenotype) Crossover(IGenotype partner);
+		void Mutate(MutationType type, float rate);
 		IGenotype Clone();
 	}
 }

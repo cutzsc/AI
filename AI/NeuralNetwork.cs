@@ -9,60 +9,105 @@ namespace KernelDeeps.AI
 {
 	public abstract class NeuralNetwork : ICloneable
 	{
-		protected int[] dimension;
+		protected readonly List<LayerOptions> layers;
+		protected bool built = false;
+		protected bool initialized = false;
 
 		protected Matrix<float>[] outputs;
-
 		protected Matrix<float>[] weights;
 		protected Matrix<float>[] b_weights;
-
 		protected Matrix<float>[] deltaWeights;
 		protected Matrix<float>[] b_deltaWeights;
 
-		public Func<float, float> Transfer { get; set; }
-		public Func<float, float> TransferDerivative { get; set; }
-		public float[] Prediction => outputs[outputs.Length - 1].ToRowMajorArray();
-		public int NumberOfInputs => dimension[0];
-		public int NumberOfOutputs => dimension[dimension.Length - 1];
+		public float[] Prediction => outputs[outputs.Length - 1].ToColumnMajorArray();
+		public int LayerCount { get; protected set; }
 
-		public NeuralNetwork(params int[] dimension)
+		public NeuralNetwork(params LayerOptions[] layers)
 		{
-			this.dimension = new int[dimension.Length];
-			Array.Copy(dimension, this.dimension, dimension.Length);
-			outputs = new Matrix<float>[dimension.Length];
-			weights = new Matrix<float>[dimension.Length - 1];
-			deltaWeights = new Matrix<float>[dimension.Length - 1];
-			b_weights = new Matrix<float>[dimension.Length - 1];
-			b_deltaWeights = new Matrix<float>[dimension.Length - 1];
+			this.layers = new List<LayerOptions>();
+			this.layers.AddRange(layers);
 		}
 
-		/// <summary>
-		/// Fully connected initialization.
-		/// </summary>
-		public virtual void Initialize()
+		public NeuralNetwork(IEnumerable<LayerOptions> layers)
 		{
-			for (int i = 0; i < dimension.Length; i++)
+			this.layers = new List<LayerOptions>();
+			this.layers.AddRange(layers);
+		}
+
+		#region add / remove
+
+		public void Add(LayerOptions layer)
+		{
+			if (initialized)
+				throw new Exception();
+			layers.Add(layer);
+		}
+
+		public void Add(IEnumerable<LayerOptions> layers)
+		{
+			if (initialized)
+				throw new Exception();
+			this.layers.AddRange(layers);
+		}
+
+		public void Remove(LayerOptions layer)
+		{
+			if (initialized)
+				throw new Exception();
+			layers.Remove(layer);
+		}
+
+		public void Remove(int index)
+		{
+			if (initialized)
+				throw new Exception();
+			layers.RemoveAt(index);
+		}
+
+		#endregion
+
+		/// <summary>
+		/// Fully connected initialization, with random values.
+		/// </summary>
+		public void Build()
+		{
+			if (built)
+				throw new Exception();
+
+			built = true;
+			layers.Capacity = layers.Count;
+			LayerCount = layers.Count;
+
+			outputs = new Matrix<float>[layers.Count];
+			weights = new Matrix<float>[layers.Count - 1];
+			deltaWeights = new Matrix<float>[layers.Count - 1];
+			b_weights = new Matrix<float>[layers.Count - 1];
+			b_deltaWeights = new Matrix<float>[layers.Count - 1];
+
+			for (int i = 0; i < layers.Count; i++)
 			{
-				outputs[i] = Matrix<float>.Build.Dense(1, dimension[i]);
-				if (i < dimension.Length - 1)
+				outputs[i] = Matrix<float>.Build.Dense(1, layers[i].NeuronCount);
+				if (i < layers.Count - 1)
 				{
-					weights[i] = Matrix<float>.Build.Dense(dimension[i], dimension[i + 1]);
-					deltaWeights[i] = Matrix<float>.Build.Dense(dimension[i], dimension[i + 1]);
-					b_weights[i] = Matrix<float>.Build.Dense(1, dimension[i + 1]);
-					b_deltaWeights[i] = Matrix<float>.Build.Dense(1, dimension[i + 1]);
+					weights[i] = Matrix<float>.Build.Dense(layers[i].NeuronCount, layers[i + 1].NeuronCount);
+					deltaWeights[i] = Matrix<float>.Build.Dense(layers[i].NeuronCount, layers[i + 1].NeuronCount);
+					b_weights[i] = Matrix<float>.Build.Dense(1, layers[i + 1].NeuronCount);
+					b_deltaWeights[i] = Matrix<float>.Build.Dense(1, layers[i + 1].NeuronCount);
 				}
 			}
 		}
 
-		/// <summary>
-		/// Initialize weights with some values.
-		/// </summary>
-		public virtual void ConnectLayers(float minWeight, float maxWeight, Func<float, float, float> f)
+		public virtual void Initialize(float minWeight = -1f, float maxWeight = 1f)
 		{
-			for (int i = 0; i < dimension.Length - 1; i++)
+			if (initialized)
+				throw new Exception();
+
+			initialized = true;
+
+			for (int i = 0; i < layers.Count - 1; i++)
 			{
-				weights[i].MapInplace(e => e = f(minWeight, maxWeight));
-				b_weights[i].MapInplace(e => e = f(minWeight, maxWeight));
+				weights[i].MapInplace(e => Mathf.NextSingle(minWeight, maxWeight));
+				b_weights[i].MapInplace(e => Mathf.NextSingle(minWeight, maxWeight));
 			}
 		}
 
@@ -80,7 +125,7 @@ namespace KernelDeeps.AI
 			{
 				outputs[i + 1] = outputs[i] * weights[i];
 				outputs[i + 1] += b_weights[i];
-				outputs[i + 1].MapInplace(Transfer);
+				outputs[i + 1].MapInplace(layers[i + 1].Transfer);
 			}
 		}
 
@@ -94,7 +139,7 @@ namespace KernelDeeps.AI
 
 			// calculate output layer
 			Matrix<float> error = Matrix<float>.Build.Dense(1, outputs[outputs.Length - 1].ColumnCount, targets) - outputs[outputs.Length - 1];
-			Matrix<float> gradient = outputs[outputs.Length - 1].Map(TransferDerivative).PointwiseMultiply(error);
+			Matrix<float> gradient = outputs[outputs.Length - 1].Map(layers[layers.Count - 1].TransferDerivative).PointwiseMultiply(error);
 			Matrix<float> momentum = deltaWeights[deltaWeights.Length - 1].Multiply(alpha);
 			Matrix<float> b_momentum = b_deltaWeights[b_deltaWeights.Length - 1].Multiply(alpha);
 
@@ -114,7 +159,7 @@ namespace KernelDeeps.AI
 				layer_index--, weights_index--)
 			{
 				error = gradient.TransposeAndMultiply(weights[weights_index + 1]);
-				gradient = outputs[layer_index].Map(TransferDerivative).PointwiseMultiply(error);
+				gradient = outputs[layer_index].Map(layers[layer_index].TransferDerivative).PointwiseMultiply(error);
 				momentum = deltaWeights[weights_index].Multiply(alpha);
 				b_momentum = b_deltaWeights[weights_index].Multiply(alpha);
 
@@ -133,6 +178,18 @@ namespace KernelDeeps.AI
 		public virtual object Clone()
 		{
 			throw new NotImplementedException();
+		}
+
+		public virtual float[,] GetWeights(int layer, bool biasLayer = false)
+		{
+			if (biasLayer)
+				return b_weights[layer].ToArray();
+			return weights[layer].ToArray();
+		}
+
+		public int NeuronCount(int layer)
+		{
+			return layers[layer].NeuronCount;
 		}
 	}
 }
