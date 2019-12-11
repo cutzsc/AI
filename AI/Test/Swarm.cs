@@ -14,7 +14,7 @@ namespace KernelDeeps.AI.Test
 
 		public float BestFitness => throw new NotImplementedException();
 
-		public IEnumerable<Ant> Creatures => throw new NotImplementedException();
+		public IEnumerable<Ant> Organisms => throw new NotImplementedException();
 
 		public void CalculateFitness()
 		{

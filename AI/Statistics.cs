@@ -22,11 +22,13 @@ namespace KernelDeeps.AI
 		/// </summary>
 		public static (float, float) BoxMuller(float mean, float stddev)
 		{
-			float v1 = Mathf.NextSingle(-1f, 1f);
-			float v2 = Mathf.NextSingle(-1f, 1f);
 			float r;
-
+			float v1;
+			float v2;
 		Mark:
+			v1 = Mathf.NextSingle(-1f, 1f);
+			v2 = Mathf.NextSingle(-1f, 1f);
+
 			r = v1 * v1 + v2 * v2;
 			if (r >= 1f || r == 0f)
 				goto Mark;
@@ -130,7 +132,7 @@ namespace KernelDeeps.AI
 					}
 				}
 			}
-			return sum;
+			return sum / n;
 		}
 		/// <summary>
 		/// Среднеквадратическое отклонение.

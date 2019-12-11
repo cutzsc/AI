@@ -9,7 +9,7 @@ namespace KernelDeeps.AI.GA
 	public static class Reproduction
 	{
 		// TODO TEST
-		public static (float[] child1, float[] child2) OnePointX(float[] parent1, float[] parent2)
+		public static (float[], float[]) OnePointX(float[] parent1, float[] parent2)
 		{
 			if (parent1.Length != parent2.Length)
 				throw new ArgumentException();
@@ -35,7 +35,7 @@ namespace KernelDeeps.AI.GA
 		}
 
 		// TODO TEST
-		public static (float[] child1, float[] child2) KPointX(float[] parent1, float[] parent2, int points)
+		public static (float[], float[]) KPointX(float[] parent1, float[] parent2, int points)
 		{
 			if (parent1.Length != parent2.Length ||
 				parent1.Length <= points ||
@@ -63,12 +63,12 @@ namespace KernelDeeps.AI.GA
 				}
 			}
 
-			kPoints.OrderBy(k => k);
+			Array.Sort(kPoints);
 
 			for (int i = 0; i < kPoints[0]; i++)
 			{
-				child1[i] = parent1[0];
-				child2[i] = parent2[0];
+				child1[i] = parent1[i];
+				child2[i] = parent2[i];
 			}
 			for (int k = 1; k < points; k++)
 			{

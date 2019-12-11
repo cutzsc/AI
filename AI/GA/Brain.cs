@@ -18,15 +18,68 @@ namespace KernelDeeps.AI.GA
 		public Brain(IEnumerable<LayerOptions> layers)
 			: base(layers) { }
 
-		public (IGenotype, IGenotype) Crossover(IGenotype partner)
+
+		public override bool Equals(object obj)
 		{
-			Brain child = new Brain(layers);
+			Brain other = obj as Brain;
+			if (other == null ||
+				layers.Count != other.layers.Count)
+				return false;
+			for (int i = 0; i < layers.Count; i++)
+			{
+				if (layers[i].neuronCount != other.layers[i].neuronCount)
+					return false;
+			}
+			return true;
+		}
 
-			// TODO
+		public override int GetHashCode()
+		{
+			return base.GetHashCode();
+		}
 
-			// crossover
+		public (IGenotype, IGenotype) Crossover(IGenotype partner, XOptions options)
+		{
+			if (!Equals(partner))
+				throw new ArgumentException();
 
-			return (child, child);
+			Brain child1 = new Brain(layers);
+			Brain child2 = new Brain(layers);
+			child1.Build();
+			child2.Build();
+
+			(float[] child1, float[] child2) childs = (new float[0], new float[0]);
+			switch (options.xType)
+			{
+				case XType.OnePointX:
+					childs = Reproduction.OnePointX(ToRowMajorArray(), ((Brain)partner).ToRowMajorArray());
+					break;
+				case XType.KPointX:
+					childs = Reproduction.KPointX(ToRowMajorArray(), ((Brain)partner).ToRowMajorArray(), options.kPoints);
+					break;
+			}
+
+			int gene = 0;
+			for (int w = 0; w < weights.Length; w++)
+			{
+				for (int y = 0; y < weights[w].RowCount; y++)
+				{
+					for (int x = 0; x < weights[w].ColumnCount; x++)
+					{
+						child1.weights[w][y, x] = childs.child1[gene];
+						child2.weights[w][y, x] = childs.child2[gene];
+						gene++;
+					}
+				}
+				for (int x = 0; x < b_weights[w].ColumnCount; x++)
+				{
+					child1.b_weights[w][0, x] = childs.child1[gene];
+					child2.b_weights[w][0, x] = childs.child2[gene];
+					gene++;
+				}
+			}
+
+			return (child1, child2);
 		}
 
 		public void Mutate(MutationType type, float chance)
@@ -91,7 +144,7 @@ namespace KernelDeeps.AI.GA
 					{
 						if (Mathf.random.NextDouble() < chance)
 						{
-							matrix[y, x] += Statistics.PDF(mean, stddev, Mathf.NextSingle(-1f, 1f));
+							matrix[y, x] += Statistics.PDF(mean, stddev, matrix[y, x]);
 						}
 					}
 				}

@@ -78,6 +78,8 @@
     <Compile Include="GA\IPopulation.cs" />
     <Compile Include="GA\Reproduction.cs" />
     <Compile Include="GA\Selection.cs" />
+    <Compile Include="GA\XOptions.cs" />
+    <Compile Include="GA\XType.cs" />
     <Compile Include="Learning\CallBackOptions.cs" />
     <Compile Include="Learning\CallTime.cs" />
     <Compile Include="Learning\LearningEventArgs.cs" />

@@ -6,17 +6,17 @@ using System.Threading.Tasks;
 
 namespace KernelDeeps.AI
 {
-	public class LayerOptions
+	public struct LayerOptions
 	{
-		public Func<float, float> Transfer { get; }
-		public Func<float, float> TransferDerivative { get; }
-		public int NeuronCount { get; }
+		public Func<float, float> transfer;
+		public Func<float, float> transferDerivative;
+		public int neuronCount;
 
 		public LayerOptions(int neuronCount, Func<float, float> transfer, Func<float, float> transferDerivative)
 		{
-			NeuronCount = neuronCount;
-			Transfer = transfer;
-			TransferDerivative = transferDerivative;
+			this.neuronCount = neuronCount;
+			this.transfer = transfer;
+			this.transferDerivative = transferDerivative;
 		}
 	}
 }

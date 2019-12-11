@@ -13,5 +13,6 @@ namespace KernelDeeps.AI.Test
 		public Brain Genotype { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 		public float Score { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 		public float Fitness { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public float SelectionProbability { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 	}
 }

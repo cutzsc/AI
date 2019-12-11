@@ -9,7 +9,7 @@ namespace KernelDeeps.AI.GA
 		float BestScore { get; }
 		float BestFitness { get; }
 
-		IEnumerable<T> Creatures { get; }
+		IEnumerable<T> Organisms { get; }
 		void CalculateFitness();
 		T ChooseOrganism();
 		void GeneratePopulation();

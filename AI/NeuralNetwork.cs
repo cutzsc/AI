@@ -10,7 +10,6 @@ namespace KernelDeeps.AI
 	public abstract class NeuralNetwork : ICloneable
 	{
 		protected readonly List<LayerOptions> layers;
-		protected bool built = false;
 		protected bool initialized = false;
 
 		protected Matrix<float>[] outputs;
@@ -20,18 +19,18 @@ namespace KernelDeeps.AI
 		protected Matrix<float>[] b_deltaWeights;
 
 		public float[] Prediction => outputs[outputs.Length - 1].ToColumnMajorArray();
-		public int LayerCount { get; protected set; }
+		public int ConnectionCount { get; private set; }
 
 		public NeuralNetwork(params LayerOptions[] layers)
 		{
 			this.layers = new List<LayerOptions>();
-			this.layers.AddRange(layers);
+			Add(layers);
 		}
 
 		public NeuralNetwork(IEnumerable<LayerOptions> layers)
 		{
 			this.layers = new List<LayerOptions>();
-			this.layers.AddRange(layers);
+			Add(layers);
 		}
 
 		#region add / remove
@@ -67,16 +66,15 @@ namespace KernelDeeps.AI
 		#endregion
 
 		/// <summary>
-		/// Fully connected initialization, with random values.
+		/// Instantiate matrices, fully connected initialization.
 		/// </summary>
-		public void Build()
+		public virtual void Build()
 		{
-			if (built)
+			if (initialized)
 				throw new Exception();
 
-			built = true;
+			initialized = true;
 			layers.Capacity = layers.Count;
-			LayerCount = layers.Count;
 
 			outputs = new Matrix<float>[layers.Count];
 			weights = new Matrix<float>[layers.Count - 1];
@@ -86,24 +84,23 @@ namespace KernelDeeps.AI
 
 			for (int i = 0; i < layers.Count; i++)
 			{
-				outputs[i] = Matrix<float>.Build.Dense(1, layers[i].NeuronCount);
+				outputs[i] = Matrix<float>.Build.Dense(1, layers[i].neuronCount);
 				if (i < layers.Count - 1)
 				{
-					weights[i] = Matrix<float>.Build.Dense(layers[i].NeuronCount, layers[i + 1].NeuronCount);
-					deltaWeights[i] = Matrix<float>.Build.Dense(layers[i].NeuronCount, layers[i + 1].NeuronCount);
-					b_weights[i] = Matrix<float>.Build.Dense(1, layers[i + 1].NeuronCount);
-					b_deltaWeights[i] = Matrix<float>.Build.Dense(1, layers[i + 1].NeuronCount);
+					weights[i] = Matrix<float>.Build.Dense(layers[i].neuronCount, layers[i + 1].neuronCount);
+					deltaWeights[i] = Matrix<float>.Build.Dense(layers[i].neuronCount, layers[i + 1].neuronCount);
+					b_weights[i] = Matrix<float>.Build.Dense(1, layers[i + 1].neuronCount);
+					b_deltaWeights[i] = Matrix<float>.Build.Dense(1, layers[i + 1].neuronCount);
+					ConnectionCount += weights[i].RowCount * weights[i].ColumnCount + layers[i + 1].neuronCount;
 				}
 			}
 		}
 
+		/// <summary>
+		/// Set random values.
+		/// </summary>
 		public virtual void Initialize(float minWeight = -1f, float maxWeight = 1f)
 		{
-			if (initialized)
-				throw new Exception();
-
-			initialized = true;
-
 			for (int i = 0; i < layers.Count - 1; i++)
 			{
 				weights[i].MapInplace(e => Mathf.NextSingle(minWeight, maxWeight));
@@ -125,7 +122,7 @@ namespace KernelDeeps.AI
 			{
 				outputs[i + 1] = outputs[i] * weights[i];
 				outputs[i + 1] += b_weights[i];
-				outputs[i + 1].MapInplace(layers[i + 1].Transfer);
+				outputs[i + 1].MapInplace(layers[i + 1].transfer);
 			}
 		}
 
@@ -139,7 +136,7 @@ namespace KernelDeeps.AI
 
 			// calculate output layer
 			Matrix<float> error = Matrix<float>.Build.Dense(1, outputs[outputs.Length - 1].ColumnCount, targets) - outputs[outputs.Length - 1];
-			Matrix<float> gradient = outputs[outputs.Length - 1].Map(layers[layers.Count - 1].TransferDerivative).PointwiseMultiply(error);
+			Matrix<float> gradient = outputs[outputs.Length - 1].Map(layers[layers.Count - 1].transferDerivative).PointwiseMultiply(error);
 			Matrix<float> momentum = deltaWeights[deltaWeights.Length - 1].Multiply(alpha);
 			Matrix<float> b_momentum = b_deltaWeights[b_deltaWeights.Length - 1].Multiply(alpha);
 
@@ -159,7 +156,7 @@ namespace KernelDeeps.AI
 				layer_index--, weights_index--)
 			{
 				error = gradient.TransposeAndMultiply(weights[weights_index + 1]);
-				gradient = outputs[layer_index].Map(layers[layer_index].TransferDerivative).PointwiseMultiply(error);
+				gradient = outputs[layer_index].Map(layers[layer_index].transferDerivative).PointwiseMultiply(error);
 				momentum = deltaWeights[weights_index].Multiply(alpha);
 				b_momentum = b_deltaWeights[weights_index].Multiply(alpha);
 
@@ -175,21 +172,34 @@ namespace KernelDeeps.AI
 			}
 		}
 
+		/// <summary>
+		/// Returns copy of this neural network.
+		/// </summary>
+		/// <returns></returns>
 		public virtual object Clone()
 		{
 			throw new NotImplementedException();
 		}
 
-		public virtual float[,] GetWeights(int layer, bool biasLayer = false)
+		public virtual float[] ToRowMajorArray()
 		{
-			if (biasLayer)
-				return b_weights[layer].ToArray();
-			return weights[layer].ToArray();
-		}
-
-		public int NeuronCount(int layer)
-		{
-			return layers[layer].NeuronCount;
+			float[] data = new float[ConnectionCount];
+			int i = 0;
+			for (int l = 0; l < layers.Count - 1; l++)
+			{
+				for (int y = 0; y < layers[l].neuronCount; y++)
+				{
+					for (int x = 0; x < layers[l + 1].neuronCount; x++)
+					{
+						data[i++] = weights[l][y, x];
+					}
+				}
+				for (int x = 0; x < layers[l + 1].neuronCount; x++)
+				{
+					data[i++] = b_weights[l][0, x];
+				}
+			}
+			return data;
 		}
 	}
 }
