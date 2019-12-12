@@ -8,13 +8,13 @@ using KernelDeeps.AI.GA;
 
 namespace KernelDeeps.AI.Test
 {
-	class Swarm : IPopulation<Ant, Brain>
+	class Swarm : IPopulation<Ant, EvoNet>
 	{
 		public float BestScore => throw new NotImplementedException();
 
 		public float BestFitness => throw new NotImplementedException();
 
-		public IEnumerable<Ant> Organisms => throw new NotImplementedException();
+		public Ant[] Organisms => throw new NotImplementedException();
 
 		public void CalculateFitness()
 		{

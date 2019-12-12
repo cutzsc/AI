@@ -8,9 +8,9 @@ using KernelDeeps.AI.GA;
 
 namespace KernelDeeps.AI.Test
 {
-	class Ant : IOrganism<Brain>
+	class Ant : IOrganism<EvoNet>
 	{
-		public Brain Genotype { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public EvoNet Genotype { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 		public float Score { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 		public float Fitness { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 		public float SelectionProbability { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }

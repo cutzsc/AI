@@ -181,6 +181,11 @@ namespace KernelDeeps.AI
 			throw new NotImplementedException();
 		}
 
+		/// <summary>
+		/// Returns all weights (include biases) as an array with the data laid row by row.
+		/// Each row contains the weights from the neuron on the previous layer to all neurons on the next layer.
+		/// </summary>
+		/// <returns></returns>
 		public virtual float[] ToRowMajorArray()
 		{
 			float[] data = new float[ConnectionCount];

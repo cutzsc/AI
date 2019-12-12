@@ -8,7 +8,7 @@ namespace KernelDeeps.AI.GA
 {
 	public enum MutationType
 	{
-		PDF,
-		BoxMuller
+		BoxMuller = 0,
+		PDF
 	}
 }

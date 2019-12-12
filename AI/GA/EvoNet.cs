@@ -10,18 +10,17 @@ using MathNet.Numerics.Distributions;
 
 namespace KernelDeeps.AI.GA
 {
-	public class Brain : NeuralNetwork, IGenotype
+	public class EvoNet : NeuralNetwork, IGenotype
 	{
-		public Brain(params LayerOptions[] layers)
+		public EvoNet(params LayerOptions[] layers)
 			: base(layers) { }
 
-		public Brain(IEnumerable<LayerOptions> layers)
+		public EvoNet(IEnumerable<LayerOptions> layers)
 			: base(layers) { }
-
 
 		public override bool Equals(object obj)
 		{
-			Brain other = obj as Brain;
+			EvoNet other = obj as EvoNet;
 			if (other == null ||
 				layers.Count != other.layers.Count)
 				return false;
@@ -38,24 +37,24 @@ namespace KernelDeeps.AI.GA
 			return base.GetHashCode();
 		}
 
-		public (IGenotype, IGenotype) Crossover(IGenotype partner, XOptions options)
+		public (IGenotype, IGenotype) Crossover(IGenotype partner, XOptions options = default)
 		{
 			if (!Equals(partner))
 				throw new ArgumentException();
 
-			Brain child1 = new Brain(layers);
-			Brain child2 = new Brain(layers);
-			child1.Build();
-			child2.Build();
+			EvoNet offspringX = new EvoNet(layers);
+			EvoNet offspringY = new EvoNet(layers);
+			offspringX.Build();
+			offspringY.Build();
 
-			(float[] child1, float[] child2) childs = (new float[0], new float[0]);
+			(float[] offspringX, float[] offspringY) offsprings = (new float[0], new float[0]);
 			switch (options.xType)
 			{
 				case XType.OnePointX:
-					childs = Reproduction.OnePointX(ToRowMajorArray(), ((Brain)partner).ToRowMajorArray());
+					offsprings = Reproduction.OnePointX(ToRowMajorArray(), ((EvoNet)partner).ToRowMajorArray());
 					break;
 				case XType.KPointX:
-					childs = Reproduction.KPointX(ToRowMajorArray(), ((Brain)partner).ToRowMajorArray(), options.kPoints);
+					offsprings = Reproduction.KPointX(ToRowMajorArray(), ((EvoNet)partner).ToRowMajorArray(), options.kPoints);
 					break;
 			}
 
@@ -66,20 +65,20 @@ namespace KernelDeeps.AI.GA
 				{
 					for (int x = 0; x < weights[w].ColumnCount; x++)
 					{
-						child1.weights[w][y, x] = childs.child1[gene];
-						child2.weights[w][y, x] = childs.child2[gene];
+						offspringX.weights[w][y, x] = offsprings.offspringX[gene];
+						offspringY.weights[w][y, x] = offsprings.offspringY[gene];
 						gene++;
 					}
 				}
 				for (int x = 0; x < b_weights[w].ColumnCount; x++)
 				{
-					child1.b_weights[w][0, x] = childs.child1[gene];
-					child2.b_weights[w][0, x] = childs.child2[gene];
+					offspringX.b_weights[w][0, x] = offsprings.offspringX[gene];
+					offspringY.b_weights[w][0, x] = offsprings.offspringY[gene];
 					gene++;
 				}
 			}
 
-			return (child1, child2);
+			return (offspringX, offspringY);
 		}
 
 		public void Mutate(MutationType type, float chance)
@@ -144,7 +143,7 @@ namespace KernelDeeps.AI.GA
 					{
 						if (Mathf.random.NextDouble() < chance)
 						{
-							matrix[y, x] += Statistics.PDF(mean, stddev, matrix[y, x]);
+							matrix[y, x] += Statistics.PDF(mean, stddev, Mathf.NextSingle(-1, 1));
 						}
 					}
 				}
@@ -153,7 +152,7 @@ namespace KernelDeeps.AI.GA
 
 		public override object Clone()
 		{
-			Brain copy = new Brain(layers);
+			EvoNet copy = new EvoNet(layers);
 			copy.Build();
 			for (int i = 0; i < weights.Length; i++)
 			{
@@ -165,7 +164,7 @@ namespace KernelDeeps.AI.GA
 
 		IGenotype IGenotype.Clone()
 		{
-			return Clone() as Brain;
+			return Clone() as EvoNet;
 		}
 	}
 }

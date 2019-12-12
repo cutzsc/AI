@@ -24,10 +24,10 @@ namespace KernelDeeps.AI.Learning
 
 		public Teacher(NeuralNetwork net) { Net = net; }
 
-		public Teacher(NeuralNetwork net, DataStream stream)
+		public Teacher(NeuralNetwork net, DataStream data)
 		{
 			Net = net;
-			Data = stream;
+			Data = data;
 		}
 
 		public virtual void Train(int epochs, int numSamples, int batchSize,

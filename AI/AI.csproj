@@ -70,7 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConvNet.cs" />
-    <Compile Include="GA\Brain.cs" />
+    <Compile Include="GA\EvoNet.cs" />
     <Compile Include="FFNet.cs" />
     <Compile Include="GA\MutationType.cs" />
     <Compile Include="GA\IGenotype.cs" />

@@ -8,7 +8,7 @@ namespace KernelDeeps.AI.GA
 {
 	public enum XType
 	{
-		OnePointX,
+		OnePointX = 0,
 		KPointX
 	}
 }
