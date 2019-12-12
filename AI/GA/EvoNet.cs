@@ -121,12 +121,12 @@ namespace KernelDeeps.AI.GA
 							toggle++;
 							if (toggle % 2 == 0)
 							{
-								matrix[y, x] += boxMuller.Item1;
+								matrix[y, x] = boxMuller.Item1;
 								toggle = 0;
 								boxMuller = Statistics.BoxMuller(mean, stddev);
 							}
 							else
-								matrix[y, x] += boxMuller.Item2;
+								matrix[y, x] = boxMuller.Item2;
 						}
 					}
 				}
@@ -143,7 +143,7 @@ namespace KernelDeeps.AI.GA
 					{
 						if (Mathf.random.NextDouble() < chance)
 						{
-							matrix[y, x] += Statistics.PDF(mean, stddev, Mathf.NextSingle(-1, 1));
+							matrix[y, x] = Statistics.PDF(mean, stddev, Mathf.NextSingle(-1, 1));
 						}
 					}
 				}
